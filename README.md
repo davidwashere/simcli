@@ -9,6 +9,7 @@ Utility for simulating CLI response for testing, mocking, and more
 
 By default `simcli.yaml` is expected in the current working directory. To change this set a new path via the `SIMCLI_CONFIG` environment variable
 
+**Sample Config:**
 ```yaml
 responses:
   - name: helloResponse
@@ -25,8 +26,20 @@ commands:
   - args: progress
     responseName: progressResponse
 defaultResponse: errorResponse
-
 ```
+
+**Spec**
+Key | Desc
+--- | ---
+`responses` | defines the possible responses to be used in commands
+`responses.name` | the unique identifier for this response
+`responses.input` | the file containing the text that will be used in this response
+`responses.delay` | the delay in milliseconds inbetween each line printed
+`responses.rc` | the return code to exit with after printing response (default 0)
+`commands` | defines the possible commands to respond to
+`commands.args` | the args exactly as they appear when passed to simcli to trigger a response
+`commands.responseName` | the response to print when args match
+`defaultResponse` | the default response to print of no commands are matched
 
 ### Execute
 To run:
