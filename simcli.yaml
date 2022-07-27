@@ -1,0 +1,15 @@
+responses:
+  - name: helloResponse
+    input: data/hello.txt
+  - name: progressResponse
+    input: data/progress.txt
+    delay: 300
+  - name: errorResponse
+    input: data/error.txt
+    rc: 1
+commands:
+  - args: hello
+    responseName: helloResponse
+  - args: progress
+    responseName: progressResponse
+defaultResponse: errorResponse
