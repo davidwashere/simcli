@@ -1,5 +1,5 @@
 # SimCLI
-Utility for simulating CLI response for testing, mocking, and more
+Utility for simulating CLI responses for testing, mocking, and more
 
 ## Usage
 
