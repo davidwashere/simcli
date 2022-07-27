@@ -68,3 +68,8 @@ output
 - [ ] Add task for accepting data via stdin, define end condition
 - [ ] Learning mode - pass args to command and record stdout, stdin, return codes, etc. and create an appropriate config
 - [ ] Create GUI for creating tasks / plans
+- [ ] Change responses to tasks
+- [ ] Add task type for outputting a file (ie: after response printed)
+- [ ] Add ability to create a .exe using a particular name
+  - [ ] Add ENVVAR / SUBCMD for creating an .exe that has a particular name that matches real CLI
+- [ ] Allow CLI flags with Trigger like simcli SIMCLI_FLAGS [flags]
