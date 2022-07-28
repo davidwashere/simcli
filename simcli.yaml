@@ -18,6 +18,16 @@ tasks:
     outPath: deleteme.txt
   - name: hang-task
     type: hang
+  - name: design-forever-task
+    type: sysout
+    input: data/design.txt
+    delay: 20
+    repeat: forever
+  - name: design-three-task
+    type: sysout
+    input: data/design.txt
+    delay: 20
+    repeat: 3
 commands:
   - args: hello
     rc: 2
@@ -33,6 +43,12 @@ commands:
   - args: hang
     tasks: 
     - hang-task
+  - args: design
+    tasks:
+    - design-forever-task
+  - args: design3
+    tasks:
+    - design-three-task
 defaultCommand:
   rc: 111
   tasks:

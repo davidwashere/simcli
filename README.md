@@ -18,6 +18,7 @@ Key | Desc
 `tasks.name` | the unique identifier to reference this task in commands
 `tasks.input` | the file containing the data that will be used as input to this task
 `tasks.delay` | the delay in milliseconds between each line printed of input (defaults to 0)
+`tasks.repeat` | the number of times to repeat the task, or `forever` to repeat forever
 `commands` | defines the possible commands to respond to
 `commands.args` | the args exactly as they appear when passed to `simcli` to trigger this commands tasks
 `commands.tasks` | the tasks to execute for this command

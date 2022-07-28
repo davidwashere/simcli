@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -40,6 +41,7 @@ type ConfigTask struct {
 	Type    string
 	Input   string
 	Delay   int
+	Repeat  string
 	OutPath string `yaml:"outPath"`
 }
 
@@ -120,7 +122,24 @@ func handleCommand(config *Config, cmd *ConfigCommand) {
 		}
 
 		handler := handlers[task.Type]
-		handler(task)
+
+		repeats := 1
+		if task.Repeat != "" {
+			if task.Repeat == "forever" {
+				for {
+					handler(task)
+				}
+			} else {
+				var err error
+				repeats, err = strconv.Atoi(task.Repeat)
+				if err != nil {
+					repeats = 1
+				}
+			}
+		}
+		for i := 0; i < repeats; i++ {
+			handler(task)
+		}
 	}
 
 	os.Exit(cmd.ReturnCode)
