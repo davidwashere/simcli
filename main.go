@@ -16,14 +16,19 @@ import (
 const (
 	ConfigEnvKey      = "SIMCLI_CONFIG"
 	DefaultConfigFile = "simcli.yaml"
+	Forever           = "forever"
+	SysErrTaskType    = "syserr"
+	SysOutTaskType    = "sysout"
+	FileTaskType      = "file"
+	HangTaskType      = "hang"
 )
 
 var (
 	handlers = map[string]func(*ConfigTask){
-		"sysout": handleSysOutErrTask,
-		"syserr": handleSysOutErrTask,
-		"file":   handleFileTask,
-		"hang":   handleHangTask,
+		SysOutTaskType: handleSysOutErrTask,
+		SysErrTaskType: handleSysOutErrTask,
+		FileTaskType:   handleFileTask,
+		HangTaskType:   handleHangTask,
 	}
 )
 
@@ -37,12 +42,13 @@ type Config struct {
 }
 
 type ConfigTask struct {
-	Name    string
-	Type    string
-	Input   string
-	Delay   int
-	Repeat  string
-	OutPath string `yaml:"outPath"`
+	Name      string
+	Type      string
+	Input     string
+	Delay     int
+	InitDelay int `yaml:"initdelay"`
+	Repeat    string
+	OutPath   string `yaml:"outPath"`
 }
 
 type ConfigCommand struct {
@@ -121,11 +127,15 @@ func handleCommand(config *Config, cmd *ConfigCommand) {
 			log.Fatalf("task %v not found", taskName)
 		}
 
+		if task.InitDelay > 0 {
+			time.Sleep(time.Duration(task.InitDelay) * time.Millisecond)
+		}
+
 		handler := handlers[task.Type]
 
 		repeats := 1
 		if task.Repeat != "" {
-			if task.Repeat == "forever" {
+			if task.Repeat == Forever {
 				for {
 					handler(task)
 				}
@@ -137,6 +147,7 @@ func handleCommand(config *Config, cmd *ConfigCommand) {
 				}
 			}
 		}
+
 		for i := 0; i < repeats; i++ {
 			handler(task)
 		}
@@ -151,7 +162,7 @@ func handleSysOutErrTask(t *ConfigTask) {
 	defer file.Close()
 
 	writer := os.Stdout
-	if t.Type == "syserr" {
+	if t.Type == SysErrTaskType {
 		writer = os.Stderr
 	}
 

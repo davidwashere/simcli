@@ -10,6 +10,7 @@ tasks:
     type: syserr
     input: data/error.txt
   - name: finished-task
+    initdelay: 2000
     type: sysout
     input: data/finished.txt
   - name: write-file-task
@@ -40,6 +41,7 @@ commands:
   - args: write
     tasks: 
     - write-file-task
+    rc: 1
   - args: hang
     tasks: 
     - hang-task

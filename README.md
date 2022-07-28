@@ -1,27 +1,40 @@
 # SimCLI
-Utility for simulating CLI responses for testing, mocking, and more
+Utility to mock CLI's, simulate responses, add delays/repeats, and more. Assists testing and cross-platform development that involves executing external programs
 
 ## Usage
 
-### Config
-`SimCLI` requires a config file defining the tasks to execute when specific args are suppied to `simcli`
+### Building / Running
 
-By default `simcli.yaml` is expected in the current working directory. To change this set a new path via the `SIMCLI_CONFIG` environment variable
+```sh
+# build / install globally (assumes go bin dir on path)
+go install .
+
+# then run
+simcli hello
+```
+
+### Config
+`SimCLI` requires a config file defining the tasks to execute when specific args are supplied to `simcli`
 
 Refer to [simcli.yaml](simcli.yaml) for an example config
+
+By default `simcli.yaml` is expected in the current working directory, to change this path set it in the `SIMCLI_CONFIG` environment variable
+
+A `task` defines what to do, a `command` chains tasks together and executes them when `args` are matched
 
 **Config Spec**
 Key | Desc
 --- | ---
-`tasks` | defines the tasks that can be used in commands
+`tasks` | defines the list of tasks that can be used in commands
 `tasks.type` | task type defines behavior and required fields, see Task Types section below for details
 `tasks.name` | the unique identifier to reference this task in commands
 `tasks.input` | the file containing the data that will be used as input to this task
-`tasks.delay` | the delay in milliseconds between each line printed of input (defaults to 0)
+`tasks.initdelay` | the delay, in milliseconds, to wait before starting the task (defaults to 0)
+`tasks.delay` | the delay, in milliseconds, between each line being printed for `sysout` and `syserr` tasks (defaults to 0)
 `tasks.repeat` | the number of times to repeat the task, or `forever` to repeat forever
 `commands` | defines the possible commands to respond to
-`commands.args` | the args exactly as they appear when passed to `simcli` to trigger this commands tasks
-`commands.tasks` | the tasks to execute for this command
+`commands.args` | the args exactly as they appear when passed to `simcli` to trigger this commands' tasks
+`commands.tasks` | the list of tasks to execute for this command
 `commands.rc` | the return / exit code to use after all tasks are complete (defaults to 0)
 `defaultCommand` | the default command to execute if no commands are matched, see `commands` above for spec
 
@@ -51,11 +64,11 @@ hello.txt
 
 
 ## TODO
-- [ ] Validate config file (ie: no tasks missing required fields, no commands referring to unknown tasks, etc.)
-- [ ] Add task for accepting data via stdin, define end condition
-- [ ] Learning mode - pass args to command and record stdout, stdin, return codes, etc. and create an appropriate config
-- [ ] Create GUI for creating tasks / plans
-- [ ] Add ability to create a .exe using a particular name
-  - [ ] Add ENVVAR / SUBCMD for creating an .exe that has a particular name that matches real CLI
-- [ ] Allow CLI flags with Trigger like simcli SIMCLI_FLAGS [flags]
-- [ ] Add condition to repeat a task x # of times or 'forever' ie: `repeat: 3` or `repeat: forever`
+- Validate config file (ie: no tasks missing required fields, no commands referring to unknown tasks, etc.)
+- Add task for accepting data via stdin, define end condition
+- Learning mode - pass args to command and record stdout, stdin, return codes, etc. and create an appropriate config
+- Add ability to create a .exe using a particular name
+  - Add ENVVAR / SUBCMD for creating an .exe that has a particular name that matches real CLI
+  - Option to embed tasks / commands into .exe?
+- Allow CLI flags with Trigger like simcli SIMCLI_FLAGS [flags]
+- Randomness and/or A/B testing - certain percentage of requests or certain amount of requests before then failure or vice versa
