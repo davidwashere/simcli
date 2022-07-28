@@ -3,43 +3,35 @@ Utility for simulating CLI responses for testing, mocking, and more
 
 ## Usage
 
-
 ### Config
-`SimCLI` requires a config file defining the commands to respond to and the responses to respond with
+`SimCLI` requires a config file defining the tasks to execute when specific args are suppied to `simcli`
 
 By default `simcli.yaml` is expected in the current working directory. To change this set a new path via the `SIMCLI_CONFIG` environment variable
 
-**Sample Config:**
-```yaml
-responses:
-  - name: helloResponse
-    input: data/hello.txt
-  - name: progressResponse
-    input: data/progress.txt
-    delay: 300
-  - name: errorResponse
-    input: data/error.txt
-    rc: 1
-commands:
-  - args: hello
-    responseName: helloResponse
-  - args: progress
-    responseName: progressResponse
-defaultResponse: errorResponse
-```
+Refer to [simcli.yaml](simcli.yaml) for an example config
 
-**Spec**
+**Config Spec**
 Key | Desc
 --- | ---
-`responses` | defines the possible responses to be used in commands
-`responses.name` | the unique identifier for this response
-`responses.input` | the file containing the text that will be used in this response
-`responses.delay` | the delay in milliseconds inbetween each line printed
-`responses.rc` | the return code to exit with after printing response (default 0)
+`tasks` | defines the tasks that can be used in commands
+`tasks.type` | task type defines behavior and required fields, see Task Types section below for details
+`tasks.name` | the unique identifier to reference this task in commands
+`tasks.input` | the file containing the data that will be used as input to this task
+`tasks.delay` | the delay in milliseconds between each line printed of input (defaults to 0)
 `commands` | defines the possible commands to respond to
-`commands.args` | the args exactly as they appear when passed to simcli to trigger a response
-`commands.responseName` | the response to print when args match
-`defaultResponse` | the default response to print of no commands are matched
+`commands.args` | the args exactly as they appear when passed to `simcli` to trigger this commands tasks
+`commands.tasks` | the tasks to execute for this command
+`commands.rc` | the return / exit code to use after all tasks are complete (defaults to 0)
+`defaultCommand` | the default command to execute if no commands are matched, see `commands` above for spec
+
+#### Task Types
+
+Type | Desc
+--- | ---
+`sysout` | will print the contents of `input` file to `sysout`
+`syserr` | will print the contents of `input` file ot `syserr`
+`file` | will copy the contents of `input` file to `outPath`
+
 
 ### Execute
 To run:
@@ -49,27 +41,18 @@ Example:
 
 ```sh
 $ simcli hello
-hello
 this
 is
-sample
-output
-
+from
+hello.txt
 ```
 
 
 ## TODO
-- [x] Add ability to sleep/delay output
-- [x] Specify config via env Var
-- [ ] Add validation step if any response is used where file is missing
-- [ ] Add ability to pick specific lines 
-- [ ] Add ability to skip lines that start with stuff
-- [ ] Add tasks other than reading files, like making http requests
+- [ ] Validate config file (ie: no tasks missing required fields, no commands referring to unknown tasks, etc.)
 - [ ] Add task for accepting data via stdin, define end condition
 - [ ] Learning mode - pass args to command and record stdout, stdin, return codes, etc. and create an appropriate config
 - [ ] Create GUI for creating tasks / plans
-- [ ] Change responses to tasks
-- [ ] Add task type for outputting a file (ie: after response printed)
 - [ ] Add ability to create a .exe using a particular name
   - [ ] Add ENVVAR / SUBCMD for creating an .exe that has a particular name that matches real CLI
 - [ ] Allow CLI flags with Trigger like simcli SIMCLI_FLAGS [flags]

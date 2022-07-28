@@ -8,3 +8,4 @@
 80%
 90%
 100%
+this was from progress.txt

@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -16,25 +17,35 @@ const (
 	DefaultConfigFile = "simcli.yaml"
 )
 
+var (
+	handlers = map[string]func(*ConfigTask){
+		"sysout": handleSysOutErrTask,
+		"syserr": handleSysOutErrTask,
+		"file":   handleFileTask,
+	}
+)
+
 type Config struct {
-	Responses       []ConfigResponse `yaml:"responses"`
-	Commands        []ConfigCommand  `yaml:"commands"`
-	ResponsesM      map[string]*ConfigResponse
-	Args            string
-	DefaultResponse string `yaml:"defaultResponse"`
+	Tasks          []ConfigTask `yaml:"tasks"`
+	TasksM         map[string]*ConfigTask
+	Commands       []ConfigCommand `yaml:"commands"`
+	CommandsM      map[string]*ConfigCommand
+	Args           string
+	DefaultCommand *ConfigCommand `yaml:"defaultCommand"`
 }
 
-type ConfigResponse struct {
-	Name       string
-	Desc       string
-	Input      string
-	ReturnCode int `yaml:"rc"`
-	Delay      int
+type ConfigTask struct {
+	Name    string
+	Type    string
+	Input   string
+	Delay   int
+	OutPath string `yaml:"outPath"`
 }
 
 type ConfigCommand struct {
-	Args         string
-	ResponseName string `yaml:"responseName"`
+	Args       string
+	Tasks      []string
+	ReturnCode int `yaml:"rc"`
 }
 
 func check(err error) {
@@ -65,9 +76,14 @@ func loadConfig() *Config {
 		log.Fatalf("failed to parse config: %v", err)
 	}
 
-	config.ResponsesM = map[string]*ConfigResponse{}
-	for i, r := range config.Responses {
-		config.ResponsesM[r.Name] = &config.Responses[i]
+	config.TasksM = map[string]*ConfigTask{}
+	for i, r := range config.Tasks {
+		config.TasksM[r.Name] = &config.Tasks[i]
+	}
+
+	config.CommandsM = map[string]*ConfigCommand{}
+	for i, c := range config.Commands {
+		config.CommandsM[c.Args] = &config.Commands[i]
 	}
 
 	return &config
@@ -81,42 +97,67 @@ func loadArgs(config *Config) {
 func main() {
 	config := loadConfig()
 	loadArgs(config)
-	// fmt.Printf("%+v\n", config)
 
 	doIt(config)
 }
 
 func doIt(config *Config) {
-	for _, cmd := range config.Commands {
-		if cmd.Args == config.Args {
-			r, ok := config.ResponsesM[cmd.ResponseName]
-			if !ok {
-				break
-			}
-
-			printResponse(r)
-			os.Exit(r.ReturnCode)
-		}
+	cmd, ok := config.CommandsM[config.Args]
+	if !ok {
+		handleCommand(config, config.DefaultCommand)
+		return
 	}
 
-	printResponse(config.ResponsesM[config.DefaultResponse])
+	handleCommand(config, cmd)
 }
 
-func printResponse(r *ConfigResponse) {
-	file, err := os.Open(r.Input)
+func handleCommand(config *Config, cmd *ConfigCommand) {
+	for _, taskName := range cmd.Tasks {
+		task, ok := config.TasksM[taskName]
+		if !ok {
+			log.Fatalf("task %v not found", taskName)
+		}
+
+		handler := handlers[task.Type]
+		handler(task)
+	}
+
+	os.Exit(cmd.ReturnCode)
+}
+
+func handleSysOutErrTask(t *ConfigTask) {
+	file, err := os.Open(t.Input)
 	check(err)
 	defer file.Close()
+
+	writer := os.Stdout
+	if t.Type == "syserr" {
+		writer = os.Stderr
+	}
 
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-		if r.Delay > 0 {
-			time.Sleep(time.Duration(r.Delay) * time.Millisecond)
+		if t.Delay > 0 {
+			time.Sleep(time.Duration(t.Delay) * time.Millisecond)
 		}
+		fmt.Fprintln(writer, scanner.Text())
 	}
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func handleFileTask(t *ConfigTask) {
+	iFile, err := os.Open(t.Input)
+	check(err)
+	defer iFile.Close()
+
+	oFile, err := os.Create(t.OutPath)
+	check(err)
+	defer oFile.Close()
+
+	_, err = io.Copy(oFile, iFile)
+	check(err)
 }

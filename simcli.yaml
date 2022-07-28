@@ -1,15 +1,34 @@
-responses:
-  - name: helloResponse
+tasks:
+  - name: hello-task
+    type: sysout
     input: data/hello.txt
-  - name: progressResponse
+  - name: progress-task
+    type: sysout
     input: data/progress.txt
     delay: 300
-  - name: errorResponse
+  - name: error-task
+    type: syserr
     input: data/error.txt
-    rc: 1
+  - name: finished-task
+    type: sysout
+    input: data/finished.txt
+  - name: write-file-task
+    type: file
+    input: data/hello.txt
+    outPath: deleteme.txt
 commands:
   - args: hello
-    responseName: helloResponse
+    rc: 2
+    tasks:
+    - hello-task
   - args: progress
-    responseName: progressResponse
-defaultResponse: errorResponse
+    tasks: 
+    - progress-task
+    - finished-task
+  - args: write
+    tasks: 
+    - write-file-task
+defaultCommand:
+  rc: 111
+  tasks:
+    - error-task
