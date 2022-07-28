@@ -16,3 +16,6 @@ make*/
 
 # Go workspace file
 go.work
+
+# Misc
+deleteme.txt

@@ -16,6 +16,8 @@ tasks:
     type: file
     input: data/hello.txt
     outPath: deleteme.txt
+  - name: hang-task
+    type: hang
 commands:
   - args: hello
     rc: 2
@@ -28,6 +30,9 @@ commands:
   - args: write
     tasks: 
     - write-file-task
+  - args: hang
+    tasks: 
+    - hang-task
 defaultCommand:
   rc: 111
   tasks:

@@ -31,6 +31,7 @@ Type | Desc
 `sysout` | will print the contents of `input` file to `sysout`
 `syserr` | will print the contents of `input` file ot `syserr`
 `file` | will copy the contents of `input` file to `outPath`
+`hang` | will cause program to hang forever
 
 
 ### Execute
@@ -56,3 +57,4 @@ hello.txt
 - [ ] Add ability to create a .exe using a particular name
   - [ ] Add ENVVAR / SUBCMD for creating an .exe that has a particular name that matches real CLI
 - [ ] Allow CLI flags with Trigger like simcli SIMCLI_FLAGS [flags]
+- [ ] Add condition to repeat a task x # of times or 'forever' ie: `repeat: 3` or `repeat: forever`

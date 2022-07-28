@@ -22,6 +22,7 @@ var (
 		"sysout": handleSysOutErrTask,
 		"syserr": handleSysOutErrTask,
 		"file":   handleFileTask,
+		"hang":   handleHangTask,
 	}
 )
 
@@ -160,4 +161,10 @@ func handleFileTask(t *ConfigTask) {
 
 	_, err = io.Copy(oFile, iFile)
 	check(err)
+}
+
+func handleHangTask(t *ConfigTask) {
+	for {
+		time.Sleep(time.Duration(1<<63 - 1))
+	}
 }
