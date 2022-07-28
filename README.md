@@ -6,6 +6,9 @@ Utility to mock CLI's, simulate responses, add delays/repeats, and more. Assists
 ### Building / Running
 
 ```sh
+# clone this respond
+git clone git@github.com:davidwashere/simcli.git
+
 # build / install globally (assumes go bin dir on path)
 go install .
 
@@ -72,3 +75,4 @@ hello.txt
   - Option to embed tasks / commands into .exe?
 - Allow CLI flags with Trigger like simcli SIMCLI_FLAGS [flags]
 - Randomness and/or A/B testing - certain percentage of requests or certain amount of requests before then failure or vice versa
+- Restructure code for extensibility
