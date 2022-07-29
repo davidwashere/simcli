@@ -33,7 +33,7 @@ Key | Desc
 `tasks.name` | the unique identifier to reference this task in commands
 `tasks.input` | the file containing the data that will be used as input to this task
 `tasks.initdelay` | the delay, in milliseconds, to wait before starting the task (defaults to 0)
-`tasks.delay` | the delay, in milliseconds, between each line being printed for `sysout` and `syserr` tasks (defaults to 0)
+`tasks.delay` | the delay, in milliseconds, between each line being printed for `sysout` and `syserr` tasks (defaults to 0)<br>_Note: delay is an estimate (not high precision), for delays < 16ms output is batched to simulate expected throughput_
 `tasks.repeat` | the number of times to repeat the task, or `forever` to repeat forever
 `commands` | defines the possible commands to respond to
 `commands.args` | the args exactly as they appear when passed to `simcli` to trigger this commands' tasks
@@ -76,3 +76,6 @@ hello.txt
 - Allow CLI flags with Trigger like simcli SIMCLI_FLAGS [flags]
 - Randomness and/or A/B testing - certain percentage of requests or certain amount of requests before then failure or vice versa
 - Restructure code for extensibility
+- add debug flag and debug logging
+- ability to add delays by lines, something like: 1-30:100, 31-:2000, etc.
+  - a single file can be used as part of multiple tasks - if tasks could specify line numbers this could be achieved with existing api

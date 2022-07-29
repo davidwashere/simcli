@@ -113,6 +113,9 @@ func main() {
 func doIt(config *Config) {
 	cmd, ok := config.CommandsM[config.Args]
 	if !ok {
+		if config.DefaultCommand == nil {
+			log.Fatalf("ERROR: command not found for `%v` and no default command specified", config.Args)
+		}
 		handleCommand(config, config.DefaultCommand)
 		return
 	}
@@ -121,6 +124,7 @@ func doIt(config *Config) {
 }
 
 func handleCommand(config *Config, cmd *ConfigCommand) {
+	log.Printf("handleCommand config %v cmd %v", config, cmd)
 	for _, taskName := range cmd.Tasks {
 		task, ok := config.TasksM[taskName]
 		if !ok {
@@ -168,11 +172,44 @@ func handleSysOutErrTask(t *ConfigTask) {
 
 	scanner := bufio.NewScanner(file)
 
+	batch := 1
+	if t.Delay > 0 && t.Delay <= 15 {
+		batch = 16 - t.Delay
+	}
+
+	batchBuf := make([]string, batch)
+
+	cnt := 0
 	for scanner.Scan() {
-		if t.Delay > 0 {
-			time.Sleep(time.Duration(t.Delay) * time.Millisecond)
+		if t.Delay == 0 {
+			fmt.Fprintln(writer, scanner.Text())
+			continue
 		}
-		fmt.Fprintln(writer, scanner.Text())
+
+		// A batch size of 1 means no need for buffer to meet SLA, but is a delay
+		if batch == 1 {
+			fmt.Fprintln(writer, scanner.Text())
+			time.Sleep(time.Duration(t.Delay) * time.Millisecond)
+			continue
+		}
+
+		// batch size must be > 0, which means delay < 15ms
+		batchBuf[cnt] = scanner.Text()
+		cnt++
+
+		if cnt == batch {
+			cnt = 0
+
+			for _, item := range batchBuf {
+				fmt.Fprintln(writer, item)
+			}
+
+			time.Sleep(time.Duration(16) * time.Millisecond)
+		}
+	}
+
+	for i := 0; i < cnt; i++ {
+		fmt.Fprintln(writer, batchBuf[i])
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -198,3 +235,26 @@ func handleHangTask(t *ConfigTask) {
 		time.Sleep(time.Duration(1<<63 - 1))
 	}
 }
+
+/*
+Regarding batch sizes in HandleSysErrOutTask
+
+time.Sleep on windows a was could not sleep less than 16 ms, see data for 3844 line file,
+the real time was the actual time it was taking vs- what would be expected.
+
+As a result add a line 'batch' for any delays < 16ms - the math isn't exact for batch size
+but the #'s are much closer to expected when batching
+
+  delay | real | expected (best case)
+  --- | --- | ---
+  1  | 0m59.638s | 3.844
+  5  | 0m59.677s | 19.220
+  10 | 0m59.699s | 38.440
+  11 | 0m59.730s | 42.284
+  12 | 0m59.711s | 46.128
+  13 | 0m59.661s | 49.972
+  14 | 0m59.743s | 53.816
+  15 | 1m8.219s  | 57.66
+  20 | 1m59.426s | 76.88 (1m16.880s)
+
+*/
