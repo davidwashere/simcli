@@ -124,7 +124,6 @@ func doIt(config *Config) {
 }
 
 func handleCommand(config *Config, cmd *ConfigCommand) {
-	log.Printf("handleCommand config %v cmd %v", config, cmd)
 	for _, taskName := range cmd.Tasks {
 		task, ok := config.TasksM[taskName]
 		if !ok {
@@ -239,11 +238,11 @@ func handleHangTask(t *ConfigTask) {
 /*
 Regarding batch sizes in HandleSysErrOutTask
 
-time.Sleep on windows a was could not sleep less than 16 ms, see data for 3844 line file,
-the real time was the actual time it was taking vs- what would be expected.
+time.Sleep on windows could not sleep less than 16 ms, see data for 3844 line file below,
+the real time was the actual time it was taking vs what would be expected.
 
-As a result add a line 'batch' for any delays < 16ms - the math isn't exact for batch size
-but the #'s are much closer to expected when batching
+As a result added a line 'batch' for any delays < 16ms - the math of # of lines to batch
+isn't to meet expected timings - but its much closer
 
   delay | real | expected (best case)
   --- | --- | ---

@@ -79,3 +79,4 @@ hello.txt
 - add debug flag and debug logging
 - ability to add delays by lines, something like: 1-30:100, 31-:2000, etc.
   - a single file can be used as part of multiple tasks - if tasks could specify line numbers this could be achieved with existing api
+- adjust arg parsing to not require flags in specific order and allow wildcards
