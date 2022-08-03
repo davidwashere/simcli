@@ -42,7 +42,11 @@ func (f *FileTaskHandler) Handle(t *Task) error {
 	}
 	defer oFile.Close()
 
-	oFile.Chmod(fs.FileMode(t.Permissions))
+	if t.Permissions != 0 {
+		oFile.Chmod(fs.FileMode(t.Permissions))
+	} else {
+		oFile.Chmod(0644)
+	}
 
 	_, err = io.Copy(oFile, iFile)
 	return err

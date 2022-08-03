@@ -1,6 +1,8 @@
 package tasks
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestFileTaskHandle(t *testing.T) {
 

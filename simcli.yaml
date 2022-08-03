@@ -17,6 +17,7 @@ tasks:
     type: file
     input: data/hello.txt
     outPath: deleteme.txt
+    perms: 0755
   - name: hang-task
     type: hang
   - name: design-forever-task
