@@ -1,9 +1,6 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"io"
 	"log"
 	"os"
 	"strconv"
@@ -26,11 +23,11 @@ const (
 )
 
 var (
-	handlers = map[string]func(*tasks.Task){
-		SysOutTaskType: handleSysOutErrTask,
-		SysErrTaskType: handleSysOutErrTask,
-		FileTaskType:   handleFileTask,
-		HangTaskType:   handleHangTask,
+	handlers = map[string]tasks.TaskHandler{
+		SysOutTaskType: &tasks.SysOutTaskHandler{},
+		SysErrTaskType: &tasks.SysErrTaskHandler{},
+		FileTaskType:   &tasks.FileTaskHandler{},
+		HangTaskType:   &tasks.HangTaskHandler{},
 	}
 )
 
@@ -53,12 +50,6 @@ func main() {
 	config := loadConfig()
 	loadArgs(config)
 	doIt(config)
-}
-
-func check(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 func loadConfig() *Config {
@@ -131,7 +122,9 @@ func handleCommand(config *Config, cmd *ConfigCommand) {
 		if task.Repeat != "" {
 			if task.Repeat == Forever {
 				for {
-					handler(task)
+					if err := handler.Handle(task); err != nil {
+						log.Fatal(err)
+					}
 				}
 			} else {
 				var err error
@@ -143,85 +136,11 @@ func handleCommand(config *Config, cmd *ConfigCommand) {
 		}
 
 		for i := 0; i < repeats; i++ {
-			handler(task)
+			if err := handler.Handle(task); err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 
 	os.Exit(cmd.ReturnCode)
-}
-
-func handleSysOutErrTask(t *tasks.Task) {
-	file, err := os.Open(t.Input)
-	check(err)
-	defer file.Close()
-
-	writer := os.Stdout
-	if t.Type == SysErrTaskType {
-		writer = os.Stderr
-	}
-
-	scanner := bufio.NewScanner(file)
-
-	batch := 1
-	if t.Delay > 0 && t.Delay <= 15 {
-		batch = 16 - t.Delay
-	}
-
-	batchBuf := make([]string, batch)
-
-	cnt := 0
-	for scanner.Scan() {
-		if t.Delay == 0 {
-			fmt.Fprintln(writer, scanner.Text())
-			continue
-		}
-
-		// A batch size of 1 means no need for buffer to meet SLA, but is a delay
-		if batch == 1 {
-			fmt.Fprintln(writer, scanner.Text())
-			time.Sleep(time.Duration(t.Delay) * time.Millisecond)
-			continue
-		}
-
-		// batch size must be > 0, which means delay < 15ms
-		batchBuf[cnt] = scanner.Text()
-		cnt++
-
-		if cnt == batch {
-			cnt = 0
-
-			for _, item := range batchBuf {
-				fmt.Fprintln(writer, item)
-			}
-
-			time.Sleep(time.Duration(16) * time.Millisecond)
-		}
-	}
-
-	for i := 0; i < cnt; i++ {
-		fmt.Fprintln(writer, batchBuf[i])
-	}
-
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-}
-
-func handleFileTask(t *tasks.Task) {
-	iFile, err := os.Open(t.Input)
-	check(err)
-	defer iFile.Close()
-
-	oFile, err := os.Create(t.OutPath)
-	check(err)
-	defer oFile.Close()
-
-	_, err = io.Copy(oFile, iFile)
-	check(err)
-}
-
-func handleHangTask(t *tasks.Task) {
-	for {
-		time.Sleep(time.Duration(1<<63 - 1))
-	}
 }

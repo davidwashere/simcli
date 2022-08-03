@@ -25,6 +25,9 @@ type TaskHandler interface {
 }
 
 type FileTaskHandler struct{}
+type HangTaskHandler struct{}
+type SysOutTaskHandler struct{}
+type SysErrTaskHandler struct{}
 
 func (f *FileTaskHandler) Handle(t *Task) error {
 	iFile, err := os.Open(t.Input)
@@ -45,21 +48,15 @@ func (f *FileTaskHandler) Handle(t *Task) error {
 	return err
 }
 
-type HangTaskHandler struct{}
-
 func (h *HangTaskHandler) Handle(t *Task) error {
 	for {
 		time.Sleep(time.Duration(1<<63 - 1))
 	}
 }
 
-type SysOutTaskHandler struct{}
-
 func (h *SysOutTaskHandler) Handle(t *Task) error {
 	return printWriter(t, os.Stdout)
 }
-
-type SysErrTaskHandler struct{}
 
 func (h *SysErrTaskHandler) Handle(t *Task) error {
 	return printWriter(t, os.Stderr)

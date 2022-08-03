@@ -87,3 +87,4 @@ hello.txt
 - add 'learning mode' - to capture the output of a command
 - add batch param to sysout/err - cannot override batch if less than 16ms
 - add sysboth task for stdout and err
+- add subcommand for printing out tasks, commands, etc. per current config
