@@ -10,7 +10,7 @@ Utility to mock CLI's, simulate responses, add delays/repeats, and more. Assists
 git clone git@github.com:davidwashere/simcli.git
 
 # build / install globally (assumes go bin dir on path)
-go install .
+go install ./cmd/simcli
 
 # then run
 simcli hello
@@ -80,3 +80,10 @@ hello.txt
 - ability to add delays by lines, something like: 1-30:100, 31-:2000, etc.
   - a single file can be used as part of multiple tasks - if tasks could specify line numbers this could be achieved with existing api
 - adjust arg parsing to not require flags in specific order and allow wildcards
+- add task 'touch' w/ permissions
+- add to file task permissions
+- add 'cmd' task to execute an external command (no longer mocking at this point?)
+- add cli args to simcli for learning, configuring, etc. - args defined in `simcli.yaml` take precedence
+- add 'learning mode' - to capture the output of a command
+- add batch param to sysout/err - cannot override batch if less than 16ms
+- add sysboth task for stdout and err

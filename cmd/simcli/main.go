@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"gopkg.in/yaml.v3"
+
+	"github.com/davidwashere/simcli/internal/tasks"
 )
 
 const (
@@ -24,7 +26,7 @@ const (
 )
 
 var (
-	handlers = map[string]func(*ConfigTask){
+	handlers = map[string]func(*tasks.Task){
 		SysOutTaskType: handleSysOutErrTask,
 		SysErrTaskType: handleSysOutErrTask,
 		FileTaskType:   handleFileTask,
@@ -33,28 +35,24 @@ var (
 )
 
 type Config struct {
-	Tasks          []ConfigTask `yaml:"tasks"`
-	TasksM         map[string]*ConfigTask
+	Tasks          []tasks.Task `yaml:"tasks"`
+	TasksM         map[string]*tasks.Task
 	Commands       []ConfigCommand `yaml:"commands"`
 	CommandsM      map[string]*ConfigCommand
 	Args           string
 	DefaultCommand *ConfigCommand `yaml:"defaultCommand"`
 }
 
-type ConfigTask struct {
-	Name      string
-	Type      string
-	Input     string
-	Delay     int
-	InitDelay int `yaml:"initdelay"`
-	Repeat    string
-	OutPath   string `yaml:"outPath"`
-}
-
 type ConfigCommand struct {
 	Args       string
 	Tasks      []string
 	ReturnCode int `yaml:"rc"`
+}
+
+func main() {
+	config := loadConfig()
+	loadArgs(config)
+	doIt(config)
 }
 
 func check(err error) {
@@ -85,7 +83,7 @@ func loadConfig() *Config {
 		log.Fatalf("failed to parse config: %v", err)
 	}
 
-	config.TasksM = map[string]*ConfigTask{}
+	config.TasksM = map[string]*tasks.Task{}
 	for i, r := range config.Tasks {
 		config.TasksM[r.Name] = &config.Tasks[i]
 	}
@@ -101,13 +99,6 @@ func loadConfig() *Config {
 func loadArgs(config *Config) {
 	args := strings.Join(os.Args[1:], " ")
 	config.Args = args
-}
-
-func main() {
-	config := loadConfig()
-	loadArgs(config)
-
-	doIt(config)
 }
 
 func doIt(config *Config) {
@@ -159,7 +150,7 @@ func handleCommand(config *Config, cmd *ConfigCommand) {
 	os.Exit(cmd.ReturnCode)
 }
 
-func handleSysOutErrTask(t *ConfigTask) {
+func handleSysOutErrTask(t *tasks.Task) {
 	file, err := os.Open(t.Input)
 	check(err)
 	defer file.Close()
@@ -216,7 +207,7 @@ func handleSysOutErrTask(t *ConfigTask) {
 	}
 }
 
-func handleFileTask(t *ConfigTask) {
+func handleFileTask(t *tasks.Task) {
 	iFile, err := os.Open(t.Input)
 	check(err)
 	defer iFile.Close()
@@ -229,31 +220,8 @@ func handleFileTask(t *ConfigTask) {
 	check(err)
 }
 
-func handleHangTask(t *ConfigTask) {
+func handleHangTask(t *tasks.Task) {
 	for {
 		time.Sleep(time.Duration(1<<63 - 1))
 	}
 }
-
-/*
-Regarding batch sizes in HandleSysErrOutTask
-
-time.Sleep on windows could not sleep less than 16 ms, see data for 3844 line file below,
-the real time was the actual time it was taking vs what would be expected.
-
-As a result added a line 'batch' for any delays < 16ms - the math of # of lines to batch
-isn't to meet expected timings - but its much closer
-
-  delay | real | expected (best case)
-  --- | --- | ---
-  1  | 0m59.638s | 3.844
-  5  | 0m59.677s | 19.220
-  10 | 0m59.699s | 38.440
-  11 | 0m59.730s | 42.284
-  12 | 0m59.711s | 46.128
-  13 | 0m59.661s | 49.972
-  14 | 0m59.743s | 53.816
-  15 | 1m8.219s  | 57.66
-  20 | 1m59.426s | 76.88 (1m16.880s)
-
-*/
