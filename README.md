@@ -35,7 +35,7 @@ Key | Desc
 `tasks.initdelay` | the delay, in milliseconds, to wait before starting the task (defaults to 0)
 `tasks.delay` | the delay, in milliseconds, between each line being printed for `sysout` and `syserr` tasks (defaults to 0)<br>_Note: delay is an estimate (not high precision), for delays < 16ms output is batched to simulate expected throughput_
 `tasks.repeat` | the number of times to repeat the task, or `forever` to repeat forever
-`tasks.perms` | the permission bits to set for task types that produce files in octal form (defaults to `0622`)
+`tasks.perms` | the permission bits to set for task types that produce files in octal form (defaults to `0644`)
 `commands` | defines the possible commands to respond to
 `commands.args` | the args exactly as they appear when passed to `simcli` to trigger this commands' tasks
 `commands.tasks` | the list of tasks to execute for this command
