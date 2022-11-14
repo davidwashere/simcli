@@ -4,22 +4,18 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
-	"gopkg.in/yaml.v3"
-
+	"github.com/davidwashere/simcli/internal/config"
 	"github.com/davidwashere/simcli/internal/tasks"
 )
 
 const (
-	ConfigEnvKey      = "SIMCLI_CONFIG"
-	DefaultConfigFile = "simcli.yaml"
-	Forever           = "forever"
-	SysErrTaskType    = "syserr"
-	SysOutTaskType    = "sysout"
-	FileTaskType      = "file"
-	HangTaskType      = "hang"
+	Forever        = "forever"
+	SysErrTaskType = "syserr"
+	SysOutTaskType = "sysout"
+	FileTaskType   = "file"
+	HangTaskType   = "hang"
 )
 
 var (
@@ -31,69 +27,16 @@ var (
 	}
 )
 
-type Config struct {
-	Tasks          []tasks.Task `yaml:"tasks"`
-	TasksM         map[string]*tasks.Task
-	Commands       []ConfigCommand `yaml:"commands"`
-	CommandsM      map[string]*ConfigCommand
-	Args           string
-	DefaultCommand *ConfigCommand `yaml:"defaultCommand"`
-}
-
-type ConfigCommand struct {
-	Args       string
-	Tasks      []string
-	ReturnCode int `yaml:"rc"`
-}
-
 func main() {
-	config := loadConfig()
-	loadArgs(config)
-	doIt(config)
+	c := config.Load()
+
+	execute(c)
 }
 
-func loadConfig() *Config {
-	pathFromEnv := os.Getenv(ConfigEnvKey)
-
-	var err error
-	var fileB []byte
-
-	configFilePath := DefaultConfigFile
-	if len(pathFromEnv) > 0 {
-		configFilePath = pathFromEnv
-	}
-
-	fileB, err = os.ReadFile(configFilePath)
-	if err != nil {
-		log.Fatalf("failed to open config: %v", err)
-	}
-
-	config := Config{}
-	err = yaml.Unmarshal(fileB, &config)
-	if err != nil {
-		log.Fatalf("failed to parse config: %v", err)
-	}
-
-	config.TasksM = map[string]*tasks.Task{}
-	for i, r := range config.Tasks {
-		config.TasksM[r.Name] = &config.Tasks[i]
-	}
-
-	config.CommandsM = map[string]*ConfigCommand{}
-	for i, c := range config.Commands {
-		config.CommandsM[c.Args] = &config.Commands[i]
-	}
-
-	return &config
-}
-
-func loadArgs(config *Config) {
-	args := strings.Join(os.Args[1:], " ")
-	config.Args = args
-}
-
-func doIt(config *Config) {
+func execute(config *config.Config) {
 	cmd, ok := config.CommandsM[config.Args]
+
+	// No command matches the arguements
 	if !ok {
 		if config.DefaultCommand == nil {
 			log.Fatalf("ERROR: command not found for `%v` and no default command specified", config.Args)
@@ -105,7 +48,7 @@ func doIt(config *Config) {
 	handleCommand(config, cmd)
 }
 
-func handleCommand(config *Config, cmd *ConfigCommand) {
+func handleCommand(config *config.Config, cmd *config.ConfigCommand) {
 	for _, taskName := range cmd.Tasks {
 		task, ok := config.TasksM[taskName]
 		if !ok {

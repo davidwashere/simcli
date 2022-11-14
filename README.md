@@ -68,6 +68,7 @@ hello.txt
 
 
 ## TODO
+- BUG: parse args as if real args - is bug when just doing a string compare (ie: --progress=-same)
 - Validate config file (ie: no tasks missing required fields, no commands referring to unknown tasks, etc.)
 - Add task for accepting data via stdin, define end condition
 - Learning mode - pass args to command and record stdout, stdin, return codes, etc. and create an appropriate config
@@ -82,10 +83,11 @@ hello.txt
   - a single file can be used as part of multiple tasks - if tasks could specify line numbers this could be achieved with existing api
 - adjust arg parsing to not require flags in specific order and allow wildcards
 - add task 'touch' w/ permissions
-- add to file task permissions
 - add 'cmd' task to execute an external command (no longer mocking at this point?)
 - add cli args to simcli for learning, configuring, etc. - args defined in `simcli.yaml` take precedence
 - add 'learning mode' - to capture the output of a command
 - add batch param to sysout/err - cannot override batch if less than 16ms
 - add sysboth task for stdout and err
 - add subcommand for printing out tasks, commands, etc. per current config
+- add 'API' trigger such that via `curl` or similar can invoke an endpoint that will trigger `simcli` to run a task, command, etc.
+  - 
