@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/davidwashere/simcli/internal/config"
@@ -33,19 +34,37 @@ func main() {
 	execute(c)
 }
 
-func execute(config *config.Config) {
-	cmd, ok := config.CommandsM[config.Args]
+func execute(cfg *config.Config) {
+	cmd, ok := matchCommand(cfg)
 
 	// No command matches the arguements
 	if !ok {
-		if config.DefaultCommand == nil {
-			log.Fatalf("ERROR: command not found for `%v` and no default command specified", config.Args)
+		if cfg.DefaultCommand == nil {
+			log.Fatalf("ERROR: command not found for `%v` and no default command specified", cfg.Args)
 		}
-		handleCommand(config, config.DefaultCommand)
+		handleCommand(cfg, cfg.DefaultCommand)
 		return
 	}
 
-	handleCommand(config, cmd)
+	handleCommand(cfg, cmd)
+}
+
+func matchCommand(cfg *config.Config) (*config.ConfigCommand, bool) {
+	cmd, ok := cfg.CommandsM[cfg.Args]
+
+	if ok {
+		return cmd, ok
+	}
+
+	for _, cmd := range cfg.Commands {
+		if cmd.Match == config.MatchContains {
+			if strings.Contains(cfg.Args, cmd.Args) {
+				return &cmd, true
+			}
+		}
+	}
+
+	return nil, false
 }
 
 func handleCommand(config *config.Config, cmd *config.ConfigCommand) {

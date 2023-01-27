@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -84,20 +85,27 @@ func printWriter(t *Task, writer io.Writer) error {
 
 	cnt := 0
 	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.Contains(line, "\n") {
+			line = strings.ReplaceAll(line, "\r", "")
+		} else {
+			line = strings.ReplaceAll(line, "\r", "\n")
+		}
+
 		if t.Delay == 0 {
-			fmt.Fprintln(writer, scanner.Text())
+			fmt.Fprintln(writer, line)
 			continue
 		}
 
 		// A batch size of 1 means no need for buffer to meet SLA, but is a delay
 		if batch == 1 {
-			fmt.Fprintln(writer, scanner.Text())
+			fmt.Fprintln(writer, line)
 			time.Sleep(time.Duration(t.Delay) * time.Millisecond)
 			continue
 		}
 
 		// batch size must be > 0, which means delay < 15ms
-		batchBuf[cnt] = scanner.Text()
+		batchBuf[cnt] = line
 		cnt++
 
 		if cnt == batch {

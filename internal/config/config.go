@@ -12,6 +12,9 @@ import (
 const (
 	ConfigEnvKey      = "SIMCLI_CONFIG"
 	DefaultConfigFile = "simcli.yaml"
+
+	MatchExact    = "exact"
+	MatchContains = "contains"
 )
 
 type Config struct {
@@ -26,7 +29,8 @@ type Config struct {
 type ConfigCommand struct {
 	Args       string
 	Tasks      []string
-	ReturnCode int `yaml:"rc"`
+	ReturnCode int    `yaml:"rc"`
+	Match      string `yaml:"match"`
 }
 
 func Load() *Config {

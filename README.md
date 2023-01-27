@@ -38,6 +38,7 @@ Key | Desc
 `tasks.perms` | the permission bits to set for task types that produce files in octal form (defaults to `0644`)
 `commands` | defines the possible commands to respond to
 `commands.args` | the args exactly as they appear when passed to `simcli` to trigger this commands' tasks
+`commands.match` | specifies rule for for matching args to a comand `contains` or `exact`(default: `exact`)
 `commands.tasks` | the list of tasks to execute for this command
 `commands.rc` | the return / exit code to use after all tasks are complete (defaults to 0)
 `defaultCommand` | the default command to execute if no commands are matched, see `commands` above for spec
@@ -51,6 +52,13 @@ Type | Desc
 `file` | will copy the contents of `input` file to `outPath`
 `hang` | will cause program to hang forever
 
+
+#### Command match
+
+Match | Desc
+--- | ---
+`exact` | command matches if `args` string matches exactly the args passed
+`contains` | command matches if `args` is contained anywhere within the args passed
 
 ### Execute
 To run:

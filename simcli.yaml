@@ -52,6 +52,10 @@ commands:
   - args: design3
     tasks:
     - design-three-task
+  - args: within
+    match: contains
+    tasks:
+    - hello-task
 defaultCommand:
   rc: 111
   tasks:
