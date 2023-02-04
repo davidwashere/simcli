@@ -13,23 +13,36 @@ import (
 
 const (
 	Forever        = "forever"
-	SysErrTaskType = "syserr"
-	SysOutTaskType = "sysout"
+	StdOutTaskType = "stdout"
+	StdErrTaskType = "stderr"
 	FileTaskType   = "file"
 	HangTaskType   = "hang"
 )
 
 var (
-	handlers = map[string]tasks.TaskHandler{
-		SysOutTaskType: &tasks.SysOutTaskHandler{},
-		SysErrTaskType: &tasks.SysErrTaskHandler{},
-		FileTaskType:   &tasks.FileTaskHandler{},
-		HangTaskType:   &tasks.HangTaskHandler{},
+	handlers = map[string]tasks.TaskHandler{}
+
+	validTaskTypes = []string{
+		StdOutTaskType,
+		StdErrTaskType,
+		FileTaskType,
+		HangTaskType,
 	}
 )
 
 func main() {
 	c := config.Load()
+
+	handlers[StdOutTaskType] = &tasks.StdOutTaskHandler{
+		BasePath: c.BasePath,
+	}
+	handlers[StdErrTaskType] = &tasks.StdErrTaskHandler{
+		BasePath: c.BasePath,
+	}
+	handlers[FileTaskType] = &tasks.FileTaskHandler{
+		BasePath: c.BasePath,
+	}
+	handlers[HangTaskType] = &tasks.HangTaskHandler{}
 
 	execute(c)
 }
@@ -78,7 +91,11 @@ func handleCommand(config *config.Config, cmd *config.ConfigCommand) {
 			time.Sleep(time.Duration(task.InitDelay) * time.Millisecond)
 		}
 
-		handler := handlers[task.Type]
+		handler, ok := handlers[task.Type]
+
+		if !ok {
+			log.Fatalf("unrecognized task type '%v', valid types: %v", task.Type, validTaskTypes)
+		}
 
 		repeats := 1
 		if task.Repeat != "" {

@@ -1,17 +1,17 @@
 tasks:
   - name: hello-task
-    type: sysout
+    type: stdout
     input: data/hello.txt
   - name: progress-task
-    type: sysout
+    type: stdout
     input: data/progress.txt
     delay: 300
   - name: error-task
-    type: syserr
+    type: stderr
     input: data/error.txt
   - name: finished-task
     initdelay: 2000
-    type: sysout
+    type: stdout
     input: data/finished.txt
   - name: write-file-task
     type: file
@@ -21,12 +21,12 @@ tasks:
   - name: hang-task
     type: hang
   - name: design-forever-task
-    type: sysout
+    type: stdout
     input: data/design.txt
     delay: 20
     repeat: forever
   - name: design-three-task
-    type: sysout
+    type: stdout
     input: data/design.txt
     delay: 20
     repeat: 3

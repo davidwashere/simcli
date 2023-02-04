@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/davidwashere/simcli/internal/tasks"
@@ -24,6 +25,7 @@ type Config struct {
 	CommandsM      map[string]*ConfigCommand
 	Args           string
 	DefaultCommand *ConfigCommand `yaml:"defaultCommand"`
+	BasePath       string
 }
 
 type ConfigCommand struct {
@@ -60,6 +62,11 @@ func loadConfig() *Config {
 	err = yaml.Unmarshal(fileB, &config)
 	if err != nil {
 		log.Fatalf("failed to parse config: %v", err)
+	}
+
+	config.BasePath, err = filepath.Abs(filepath.Dir(configFilePath))
+	if err != nil {
+		log.Printf("warning: failed to derive absolute path of config %v", err)
 	}
 
 	config.TasksM = map[string]*tasks.Task{}

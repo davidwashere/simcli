@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -25,13 +26,26 @@ type TaskHandler interface {
 	Handle(t *Task) error
 }
 
-type FileTaskHandler struct{}
+type FileTaskHandler struct {
+	BasePath string
+}
 type HangTaskHandler struct{}
-type SysOutTaskHandler struct{}
-type SysErrTaskHandler struct{}
+
+type StdOutTaskHandler struct {
+	BasePath string
+}
+
+type StdErrTaskHandler struct {
+	BasePath string
+}
 
 func (f *FileTaskHandler) Handle(t *Task) error {
-	iFile, err := os.Open(t.Input)
+	path := t.Input
+	if !filepath.IsAbs(path) {
+		path = filepath.Join(f.BasePath, t.Input)
+	}
+
+	iFile, err := os.Open(path)
 	if err != nil {
 		return err
 	}
@@ -59,16 +73,20 @@ func (h *HangTaskHandler) Handle(t *Task) error {
 	}
 }
 
-func (h *SysOutTaskHandler) Handle(t *Task) error {
-	return printWriter(t, os.Stdout)
+func (h *StdOutTaskHandler) Handle(t *Task) error {
+	return printWriter(h.BasePath, t, os.Stdout)
 }
 
-func (h *SysErrTaskHandler) Handle(t *Task) error {
-	return printWriter(t, os.Stderr)
+func (h *StdErrTaskHandler) Handle(t *Task) error {
+	return printWriter(h.BasePath, t, os.Stderr)
 }
 
-func printWriter(t *Task, writer io.Writer) error {
-	file, err := os.Open(t.Input)
+func printWriter(basePath string, t *Task, writer io.Writer) error {
+	path := t.Input
+	if !filepath.IsAbs(path) {
+		path = filepath.Join(basePath, t.Input)
+	}
+	file, err := os.Open(path)
 	if err != nil {
 		return err
 	}

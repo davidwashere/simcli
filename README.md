@@ -21,7 +21,7 @@ simcli hello
 
 Refer to [simcli.yaml](simcli.yaml) for an example config
 
-By default `simcli.yaml` is expected in the current working directory, to change this path set it in the `SIMCLI_CONFIG` environment variable
+By default `simcli.yaml` is expected in the current working directory, to change this path set it in the `SIMCLI_CONFIG` environment variable. Input files will be relative to the config file's directory unless the input file is an absolute path
 
 A `task` defines what to do, a `command` chains tasks together and executes them when `args` are matched
 
@@ -33,7 +33,7 @@ Key | Desc
 `tasks.name` | the unique identifier to reference this task in commands
 `tasks.input` | the file containing the data that will be used as input to this task
 `tasks.initdelay` | the delay, in milliseconds, to wait before starting the task (defaults to 0)
-`tasks.delay` | the delay, in milliseconds, between each line being printed for `sysout` and `syserr` tasks (defaults to 0)<br>_Note: delay is an estimate (not high precision), for delays < 16ms output is batched to simulate expected throughput_
+`tasks.delay` | the delay, in milliseconds, between each line being printed for `stdout` and `stderr` tasks (defaults to 0)<br>_Note: delay is an estimate (not high precision), for delays < 16ms output is batched to simulate expected throughput_
 `tasks.repeat` | the number of times to repeat the task, or `forever` to repeat forever
 `tasks.perms` | the permission bits to set for task types that produce files in octal form (defaults to `0644`)
 `commands` | defines the possible commands to respond to
@@ -47,8 +47,8 @@ Key | Desc
 
 Type | Desc
 --- | ---
-`sysout` | will print the contents of `input` file to `sysout`
-`syserr` | will print the contents of `input` file ot `syserr`
+`stdout` | will print the contents of `input` file to `stdout`
+`stderr` | will print the contents of `input` file ot `stderr`
 `file` | will copy the contents of `input` file to `outPath`
 `hang` | will cause program to hang forever
 
@@ -94,8 +94,8 @@ hello.txt
 - add 'cmd' task to execute an external command (no longer mocking at this point?)
 - add cli args to simcli for learning, configuring, etc. - args defined in `simcli.yaml` take precedence
 - add 'learning mode' - to capture the output of a command
-- add batch param to sysout/err - cannot override batch if less than 16ms
-- add sysboth task for stdout and err
+- add batch param to stdout/err - cannot override batch if less than 16ms
+- add stdboth task for stdout and err
 - add subcommand for printing out tasks, commands, etc. per current config
 - add 'API' trigger such that via `curl` or similar can invoke an endpoint that will trigger `simcli` to run a task, command, etc.
   - 
