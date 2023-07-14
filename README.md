@@ -90,7 +90,7 @@ hello.txt
 - ability to add delays by lines, something like: 1-30:100, 31-:2000, etc.
   - a single file can be used as part of multiple tasks - if tasks could specify line numbers this could be achieved with existing api
 - adjust arg parsing to not require flags in specific order and allow wildcards
-- add task 'touch' w/ permissions
+- add task 'touch' w/ permissions to create an output file, or copy an output file from a dataset to an output location
 - add 'cmd' task to execute an external command (no longer mocking at this point?)
 - add cli args to simcli for learning, configuring, etc. - args defined in `simcli.yaml` take precedence
 - add 'learning mode' - to capture the output of a command
@@ -98,4 +98,3 @@ hello.txt
 - add stdboth task for stdout and err
 - add subcommand for printing out tasks, commands, etc. per current config
 - add 'API' trigger such that via `curl` or similar can invoke an endpoint that will trigger `simcli` to run a task, command, etc.
-  - 
