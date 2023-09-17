@@ -98,4 +98,5 @@ hello.txt
 - add stdboth task for stdout and err
 - add subcommand for printing out tasks, commands, etc. per current config
 - add 'API' trigger such that via `curl` or similar can invoke an endpoint that will trigger `simcli` to run a task, command, etc.
-  - 
+- ability to mix stderr within stdout and vice versa
+  - this can be done with different files right now, so perahps not necessary
